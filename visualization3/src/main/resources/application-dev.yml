@@ -1,0 +1,7 @@
+points:
+  - address: 143.110.183.204
+    alias: Digital_Ocean_Bangalore
+  - address: 45.79.57.238
+    alias: Linode_Dalas
+  - address: 173.255.227.93
+    alias: Linode_Newark

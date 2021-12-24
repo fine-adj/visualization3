@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>topoTree</title>
+  
+</head>
+<body>
+  <div id="echarts-force-chart" style="width: 800px;height:800px;"></div>
+	<!-- <script src="./echarts-need/echarts.min.js"></script> -->
+<!--  <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>-->
+  <script type="text/javascript" src="/js/jquery.min.js"></script>
+  <!-- ECharts -->
+<!--    <script src="js/plugins/echarts/echarts-all.js"></script>-->
+    <script src="/js/plugins/echarts/echarts-all.js"></script>
+  <script src="/js/plugins/test.js"></script>
+	<script type="text/javascript">
+    $(function () {
+  // chordChart.setOption(chordoption);
+    // $(window).resize(chordChart.resize);
+
+    var forceChart = echarts.init(document.getElementById("echarts-force-chart"));
+    var forceoption ={
+        title : {
+            text: '节点关系',
+            // subtext: '数据来自人立方',
+            x:'right',
+            y:'bottom'
+        },
+        tooltip : {
+            trigger: 'item',
+            formatter: '{a} : {b}'
+        },
+        toolbox: {
+            show : true,
+            feature : {
+                restore : {show: true},
+                magicType: {show: true, type: ['force', 'chord']},
+                saveAsImage : {show: true}
+            }
+        },
+        legend: {
+            x: 'left',
+            data:['type1','type2','type3']
+        },
+        series : [
+            {
+                type:'force',
+                name : "RTT",
+                ribbonType: false,
+                categories : [
+                    {
+                        name: '人物'
+                    },
+                    {
+                        name: 'type1'
+                    },
+                    {
+                        name:'type2'
+                    },
+                    {
+                        name:'type3'
+                    }
+                ],
+                itemStyle: {
+                    normal: {
+                        label: {
+                            show: true,
+                            textStyle: {
+                                color: '#333'
+                            }
+                        },
+                        nodeStyle : {
+                            brushType : 'both',
+                            borderColor : 'rgba(255,215,0,0.4)',
+                            borderWidth : 1
+                        },
+                        linkStyle: {
+                            type: 'curve'
+                        }
+                    },
+                    emphasis: {
+                        label: {
+                            show: false
+                            // textStyle: null      // 默认使用全局文本样式，详见TEXTSTYLE
+                        },
+                        nodeStyle : {
+                            //r: 30
+                        },
+                        linkStyle : {}
+                    }
+                },
+                useWorker: false,
+                minRadius : 15,
+                maxRadius : 25,
+                gravity: 1.1,
+                scaling: 1.1,
+                roam: 'move',
+                nodes:[
+                    {category:0, name: 'n1', value : 10},
+                    {category:1, name: 'n2',value : 2},
+                    {category:1, name: 'n3',value : 3},
+                    {category:1, name: 'n4',value : 3},
+                    {category:1, name: 'n5',value : 7},
+                    {category:2, name: 'n6',value : 5},
+                    {category:2, name: 'n7',value : 8},
+                    {category:2, name: 'n8',value : 9},
+                    {category:2, name: 'n9',value : 4},
+                    {category:2, name: 'n10',value : 4},
+                    {category:2, name: 'n11',value : 1},
+                    {category:3, name: 'n12',value : 3},
+                    {category:0, name: 'n13', value : 10},
+                    {category:1, name: 'n14',value : 2},
+                    {category:1, name: 'n15',value : 3},
+                    {category:1, name: 'n16',value : 3},
+                    {category:1, name: 'n17',value : 7},
+                    {category:2, name: 'n18',value : 5},
+                    {category:2, name: 'n19',value : 8},
+                    {category:2, name: 'n20',value : 9},
+                    {category:2, name: 'n21',value : 4},
+                    {category:2, name: 'n22',value : 4},
+                    {category:2, name: 'n23',value : 1},
+                    {category:3, name: 'n24',value : 3},
+                ],
+                links : [
+                    {source : 'n2', target : 'n1', weight : 1, name: '1.0'},
+                    {source : 'n3', target : 'n1', weight : 2, name: '2.0'},
+                    {source : 'n4', target : 'n1', weight : 1, name: '3.3'},
+                    {source : 'n5', target : 'n1', weight : 2, name: '4.3'},
+                    {source : 'n6', target : 'n1', weight : 3, name: '10.6'},
+                    {source : 'n7', target : 'n1', weight : 1, name: '11.4'},
+                    {source : 'n8', target : 'n1', weight : 10, name: '6.8'},
+                    {source : 'n9', target : 'n1', weight : 1, name: '9.9'},
+                    {source : 'n10', target : 'n1', weight : 1, name:'11.1'},
+                    {source : 'n11', target : 'n1', weight : 1, name:'14.2'},
+                    {source : 'n12', target : 'n1', weight : 1, name:'14.2'},
+                    {source : 'n13', target : 'n1', weight : 1, name: '3.3'},
+                    {source : 'n14', target : 'n1', weight : 2, name: '4.3'},
+                    {source : 'n15', target : 'n1', weight : 2, name: '4.3'},
+                    {source : 'n16', target : 'n1', weight : 3, name: '10.6'},
+                    {source : 'n17', target : 'n1', weight : 1, name: '11.4'},
+                    {source : 'n18', target : 'n1', weight : 10, name: '6.8'},
+                    {source : 'n19', target : 'n1', weight : 1, name: '93.9'},
+                    {source : 'n19', target : 'n20', weight : 1, name: '93.9'},
+                    {source : 'n20', target : 'n1', weight : 1, name:'11.1'},
+                    {source : 'n21', target : 'n1', weight : 1, name:'14.2'},
+                    {source : 'n22', target : 'n1', weight : 1, name: '9.9'},
+                    {source : 'n23', target : 'n1', weight : 1, name:'11.1'},
+                    {source : 'n24', target : 'n1', weight : 1, name:'14.2'},
+
+
+                    {source : 'n13', target : 'n4', weight : 1, name: '3.3'},
+                    {source : 'n14', target : 'n5', weight : 2, name: '4.3'},
+                    {source : 'n15', target : 'n4', weight : 2, name: '4.3'},
+                    {source : 'n16', target : 'n8', weight : 3, name: '10.6'},
+                    {source : 'n17', target : 'n9', weight : 1, name: '11.4'},
+                    {source : 'n18', target : 'n3', weight : 10, name: '6.8'},
+                    {source : 'n19', target : 'n13', weight : 1, name: '93.9'},
+                    {source : 'n19', target : 'n5', weight : 1, name: '93.9'},
+                    {source : 'n20', target : 'n8', weight : 1, name:'11.1'},
+
+                ]
+            }
+        ]
+    };
+
+    forceChart.setOption(forceoption);
+    $(window).resize(forceChart.resize);
+})
+
+	</script>
+  <!-- <script type="text/javascript" src="jsondata/agency2.json?callback=agency2"></script> -->
+</body>
+</html>

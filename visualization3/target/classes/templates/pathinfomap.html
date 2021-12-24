@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Awesome-pyecharts</title>
+    <script type="text/javascript" src="https://assets.pyecharts.org/assets/echarts.min.js"></script>
+    <script type="text/javascript" src="https://assets.pyecharts.org/assets/maps/world.js"></script>
+</head>
+<body>
+
+<br/>
+<div class="col-xs-6 col-sm-3 col-md-2 white-element">
+    <div class="form-group">
+        <span>源节点:</span>
+        <select class="form-control" name="sex">
+            <option></option>
+            <option>北京</option>
+            <option>******</option>
+        </select>
+        &nbsp;
+        <span>目的节点:</span>
+        <select class="form-control" name="sex">
+            <option></option>
+            <option>新疆</option>
+            <option>******</option>
+        </select>
+        &nbsp;
+        <span>丢包率:</span>
+        <input type="text" class="form-control setmargin" name="kiindex1">
+        &nbsp;
+        <span>抖动:</span>
+        <input type="text" class="form-control setmargin" name="kiindex1">
+        &nbsp;
+        <span>时延:</span>
+        <input type="text" class="form-control setmargin" name="kiindex1">
+    </div>
+</div>
+
+    <br/>
+    <div id="main" style="width: 900px; height: 600px">
+
+    </div>
+<script src="/js/echarts-need/echarts.min.js"></script>
+<script src="/js/echarts-need/world.js"></script>
+<script src="/js/echarts-need/china.js"></script>
+<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.js"></script>
+<script>
+
+    var chartDom = document.getElementById('main');
+    var myChart = echarts.init(chartDom);
+    var option;
+
+    option = {
+    backgroundColor: '#404a59',
+    geo: {
+        map: 'china',
+    },
+    series: [
+        // 常规地图
+        {
+            type: 'map',
+            mapType: 'china',
+            itemStyle: {
+                normal: {
+                    areaColor: '#FFB5C5',
+                    borderColor: '#D1EEEE'
+                },
+                emphasis: {
+                    areaColor: '#CD96CD'
+                }
+            }
+        },
+        // 区域散点图
+        {
+            type: 'effectScatter',
+            coordinateSystem: 'geo',
+            label: {
+                normal: {
+                    show: true,
+                    position: 'right',
+                    formatter: '{b}'
+                }
+            },
+            data: [{
+                    name: "新疆",
+                    value: [87.36, 43.45, 100]
+                },
+                {
+                    name: "北京",
+                    value: [116.24, 39.55, 100]
+                },
+                // {
+                //     name: "武汉",
+                //     value: [114.31, 30.52,100]
+                // },
+                // {
+                //     name: "长沙",
+                //     value: [113.0823, 28.2568,100]
+                // },
+                {
+                    name: "成都",
+                    value: [103.9526, 30.7617,100]
+                }
+            ]
+        },
+        // 线 和 点
+        {
+            type: 'lines',
+            zlevel: 6,
+            effect: {
+                show: true,
+                period: 10,
+                color: 'green',
+            },
+            lineStyle: {
+                normal: {
+                    color: 'red',
+                    width: 0.2,           
+                    curveness: 0.2       //曲线弯曲程度
+                }
+            },
+            data: [
+            //---------------------------------北京-新疆
+            {
+                fromName: 1,
+                toName: 1,
+                coords: [
+                    [116.24, 39.55],
+                    [87.36, 43.45],
+                ]
+            },
+            //---------------------------------长沙-武汉
+            // {
+            //     fromName: 1,
+            //     toName: 1,
+            //     coords: [
+            //         [113.0823, 28.2568],
+            //         [114.31, 30.52]
+            //     ]
+            // },
+            //----------------------------------北京-成都
+            {
+                fromName: 1,
+                toName: 1,
+                coords: [
+                    [116.24, 39.55],
+                    [103.9526, 30.7617]
+                ]
+            },
+            //--------------------------------成都-新疆
+            {
+                fromName: 1,
+                toName: 1,
+                coords: [
+                    [103.9526, 30.7617],
+                    [87.36, 43.45]
+                ]
+            }
+            ],
+        }
+    ]
+};
+
+myChart.setOption(option, true);
+
+
+</script>
+</body>
+</html>

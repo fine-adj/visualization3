@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.demo.mapper.QosDataMapper" >
+  <resultMap id="BaseResultMap" type="com.example.demo.dto.QosDataDO" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <id column="source_name" property="sourceName" jdbcType="VARCHAR" />
+    <id column="des_name" property="desName" jdbcType="VARCHAR" />
+    <id column="timestamp" property="timestamp" jdbcType="VARCHAR" />
+    <result column="source_ip" property="sourceIp" jdbcType="VARCHAR" />
+    <result column="des_ip" property="desIp" jdbcType="VARCHAR" />
+    <result column="interval1" property="interval1" jdbcType="VARCHAR" />
+    <result column="num" property="num" jdbcType="VARCHAR" />
+    <result column="p_interval" property="pInterval" jdbcType="VARCHAR" />
+    <result column="p_num" property="pNum" jdbcType="VARCHAR" />
+    <result column="step" property="step" jdbcType="VARCHAR" />
+    <result column="protocol" property="protocol" jdbcType="VARCHAR" />
+    <result column="packet_size" property="packetSize" jdbcType="VARCHAR" />
+    <result column="value" property="value" jdbcType="VARCHAR" />
+    <result column="p_seq" property="pSeq" jdbcType="VARCHAR" />
+    <result column="ts" property="ts" jdbcType="VARCHAR" />
+  </resultMap>
+  <resultMap id="CoreResultMap" type="com.example.demo.dto.QosCoreFieldDO">
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <id column="source_name" property="sourceName" jdbcType="VARCHAR" />
+    <id column="des_name" property="desName" jdbcType="VARCHAR" />
+    <id column="timestamp" property="timestamp" jdbcType="VARCHAR" />
+    <result column="source_ip" property="sourceIp" jdbcType="VARCHAR" />
+    <result column="des_ip" property="desIp" jdbcType="VARCHAR" />
+    <result column="value" property="value" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Example_Where_Clause" >
+    <where >
+      <foreach collection="oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+
+  <sql id="Base_Column_List" >
+
+    id, source_name, des_name, timestamp, source_ip, des_ip, interval1, num, p_interval, 
+    p_num, step, protocol, packet_size, value, p_seq, ts
+  </sql>
+  <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.example.demo.dto.QosDataExampleDO" >
+    select
+    <if test="distinct" >
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from packet_loss_20210831
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null" >
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="com.example.demo.dto.QosDataKeyDO" >
+
+    select 
+    <include refid="Base_Column_List" />
+    from packet_loss_20210831
+    where id = #{id,jdbcType=INTEGER}
+      or source_name = #{sourceName,jdbcType=VARCHAR}
+      or des_name = #{desName,jdbcType=VARCHAR}
+      or timestamp = #{timestamp,jdbcType=VARCHAR}
+  </select>
+
+<!--  <select id="selectByExample2" parameterType="com.example.demo.dto.WithTableNameAndCriteriaParam" resultMap="CoreResultMap">-->
+<!--    select-->
+<!--    <include refid="Base_Column_List" />-->
+<!--    from ${tableName}-->
+<!--    where id = #{id,jdbcType=INTEGER}-->
+<!--      or source_name = #{sourceName,jdbcType=VARCHAR}-->
+<!--      or source_ip = #{sourceIp,jdbcType=VARCHAR}-->
+<!--      or des_name = #{desName,jdbcType=VARCHAR}-->
+<!--      or des_ip = #{desIp,jdbcType=VARCHAR}-->
+<!--      or timestamp = #{timestamp,jdbcType=VARCHAR}-->
+<!--  </select>-->
+
+  <select id="selectByExample2" parameterType="com.example.demo.dto.WithTableNameAndCriteriaParam" resultMap="CoreResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from ${tableName}
+    where id = #{id}
+    or source_name = #{sourceName}
+    or source_ip = #{sourceIp}
+    or des_name = #{desName}
+    or des_ip = #{desIp}
+    or timestamp = #{timestamp}
+  </select>
+
+  <select id="selectBySrcAndDesName" parameterType="com.example.demo.dto.WithTableNameAndCriteriaParam" resultMap="CoreResultMap"
+         timeout="40">
+    select
+    <include refid="Base_Column_List" />
+    from ${tableName} force index(source_name)
+    where source_name = #{sourceName}
+    and des_name = #{desName} and packet_size="1024"
+  </select>
+
+</mapper>

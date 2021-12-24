@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+    <title> - 树形视图</title>
+
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link href="/css/bootstrap.min.css?v=3.3.6" rel="stylesheet">
+    <link href="/css/font-awesome.css?v=4.4.0" rel="stylesheet">
+    <link href="/css/plugins/jsTree/style.min.css" rel="stylesheet">
+    <link href="/css/animate.css" rel="stylesheet">
+    <link href="/css/style.css?v=4.1.0" rel="stylesheet">
+
+</head>
+
+<body class="gray-bg">
+    <div class="wrapper wrapper-content  animated fadeInRight">
+
+        <div class="row">
+            <div class="col-sm-4">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5>节点列表 <small>***</small></h5>
+                        <div class="ibox-tools">
+                            <a class="collapse-link">
+                                <i class="fa fa-chevron-up"></i>
+                            </a>
+                            <a class="close-link">
+                                <i class="fa fa-times"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="ibox-content">
+
+                        <div id="jstree1">
+                            <ul>
+                                <li class="jstree-open">内置租户
+                                    <ul>
+                                        <li>阿里云
+                                            <ul id="ali_cloud_id">
+                                                <li ><a id="Sydney666">Sydney</a></li>
+                                                <li data-jstree='{"type":"css"}'>TK</li>
+                                                <li >Virginia</li>
+                                            </ul>
+                                        </li>
+                                        
+                                        <li class="jstree-open" id="shoudu_cloud_id">首都在线
+                                            <ul>
+                                                <li >Amsterdam</li>
+                                                <li>Dallas</li>
+                                                <li class="text-navy">beijing</li>
+                                            </ul>
+                                        </li>
+                                        <li >***</li>
+                                        
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-8">
+                <div class="jqGrid_wrapper">
+                    <table id="table_list_1"></table>
+                </div>
+            </div>
+            
+        </div>
+
+    </div>
+
+
+    <!-- 全局js -->
+    <script src="/js/jquery.min.js?v=2.1.4"></script>
+    <script src="/js/bootstrap.min.js?v=3.3.6"></script>
+
+
+
+    <!-- 自定义js -->
+    <script src="/js/content.js?v=1.0.0"></script>
+
+    <!-- jqGrid -->
+    <script src="/js/plugins/jqgrid/i18n/grid.locale-cn.js?0820"></script>
+    <script src="/js/plugins/jqgrid/jquery.jqGrid.min.js?0820"></script>
+
+
+    <!-- jsTree plugin javascript -->
+    <script src="/js/plugins/jsTree/jstree.min.js"></script>
+
+    <style>
+        .jstree-open > .jstree-anchor > .fa-folder:before {
+            content: "\f07c";
+        }
+
+        .jstree-default .jstree-icon.none {
+            width: 0;
+        }
+    </style>
+
+    <script>
+        var Sydney6666 = document.getElementById("Sydney666");
+            Sydney6666.onclick = function(){
+                console.log(123456);
+            }
+
+        
+        $(document).ready(function () {
+            $.jgrid.defaults.styleUI = 'Bootstrap';
+
+            $('#jstree1').jstree({
+                'core': {
+                    'check_callback': true
+                },
+                'plugins': ['types', 'dnd'],
+                'types': {
+                    'default': {
+                        // 'icon': 'fa fa-folder'
+                        'icon': 'fa fa-circle'
+                    },
+                    'img': {
+                        'icon': 'fa fa-file-image-o'
+                    },
+                    'js': {
+                        'icon': 'fa fa-file-text-o'
+                    }
+
+                }
+            });
+
+            //get data from json file
+            var mydata = [
+                {
+                    id: "1",
+                    invdate: "2010-05-24",
+                    name: "test",
+                    note: "note",
+                    tax: "10.00",
+                    total: "2111.00"
+                },
+                {
+                    id: "2",
+                    invdate: "2010-05-25",
+                    name: "test2",
+                    note: "note2",
+                    tax: "20.00",
+                    total: "320.00"
+                },
+                {
+                    id: "3",
+                    invdate: "2007-09-01",
+                    name: "test3",
+                    note: "note3",
+                    tax: "30.00",
+                    total: "430.00"
+                }
+            ]
+            $("#Sydney666").click(function(){
+                console.log("click Sydney")
+                var Ajax = function(){
+                $.getTableJson("jsondata/agency5.json",function(data){
+                    $.each(data,function(i,item){
+                        console.log(item);
+                    })
+                })
+                }
+            })
+            
+            // Configuration for jqGrid Example 1
+            $("#table_list_1").jqGrid({
+                data: mydata,
+                datatype: "local",
+                height: 250,
+                autowidth: true,
+                shrinkToFit: true,
+                rowNum: 14,
+                rowList: [10, 20, 30],
+                colNames: ['序号', '日期', '客户', '金额', '运费', '总额', '备注'],
+                colModel: [
+                    {
+                        name: 'id',
+                        index: 'id',
+                        width: 60,
+                        sorttype: "int"
+                    },
+                    {
+                        name: 'invdate',
+                        index: 'invdate',
+                        width: 90,
+                        sorttype: "date",
+                        formatter: "date"
+                    },
+                    {
+                        name: 'name',
+                        index: 'name',
+                        width: 100
+                    },
+                    {
+                        name: 'amount',
+                        index: 'amount',
+                        width: 80,
+                        align: "right",
+                        sorttype: "float",
+                        formatter: "number"
+                    },
+                    {
+                        name: 'tax',
+                        index: 'tax',
+                        width: 80,
+                        align: "right",
+                        sorttype: "float"
+                    },
+                    {
+                        name: 'total',
+                        index: 'total',
+                        width: 80,
+                        align: "right",
+                        sorttype: "float"
+                    },
+                    {
+                        name: 'note',
+                        index: 'note',
+                        width: 150,
+                        sortable: false
+                    }
+                ],
+                // pager: "#pager_list_1",
+                viewrecords: true,
+                caption: "jqGrid 示例1",
+                hidegrid: false
+            });
+
+            // $(window).bind('resize', function () {
+            //     var width = $('.jqGrid_wrapper').width();
+            //     $('#table_list_1').setGridWidth(width);
+               
+            // });
+
+        });
+    </script>
+
+    <!-- <script type="text/javascript" src="jsondata/agency5.json?callback=agency5"></script> -->
+    
+</body>
+
+</html>
