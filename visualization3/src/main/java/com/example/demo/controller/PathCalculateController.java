@@ -11,10 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -82,7 +79,8 @@ public class PathCalculateController {
     }
 
     /**
-     * 3.计算任意两点所有备选虚拟专线
+     * 3.计算任意两点所有备选虚拟专线：基于已经引入了qos数据构建的拓扑，已经排除了不连通的链路。
+     * 注意：这个方法中先不计算每条路径的qos值，也就是Pair的value先都赋空！！！第6步筛选完成后再计算筛选后路径集合的每条路径的Qos数据
      */
     public LinkedList<Pair<ArrayList<String>,QosBO>> srcAndDesAllPath(String srcNode, String desNode,String maxJump) {
         LinkedList<Pair<ArrayList<String>,QosBO>> allPathList = new LinkedList<>();
@@ -93,77 +91,6 @@ public class PathCalculateController {
 
         return allPathList;
 
-    }
-
-    /**
-     * 7.计算一条路径rtt
-     * @param path
-     * @return
-     */
-    public String getPathRtt(ArrayList<String> path){
-//        createFullMeshTopo();
-        //遍历传进来的路径每一条链路，nodeIndexMap中找到对应索引，再从topoArr中拿到qos
-        if (path == null || path.size() <= 1){
-            return null;
-        }
-        Double pathRtt = 0.0;
-        for (int i=0;i<path.size();i++){
-            Integer srcNodeIdx = this.nodeIndexMap.get(path.get(i));
-            if (i+1<path.size()){
-                Integer desNodeIdx = this.nodeIndexMap.get(path.get(i+1));
-                if (srcNodeIdx != null && desNodeIdx != null){
-                    QosBO qosBO = this.topoArr[srcNodeIdx][desNodeIdx];
-                    if (qosBO != null){
-                        pathRtt = pathRtt +Double.parseDouble(qosBO.getRtt_avg());
-                    }
-                }
-            }
-        }
-        return pathRtt.toString();
-    }
-
-    /**
-     * 7.计算一条路径丢包率
-     * @param path
-     * @return
-     */
-    public String getPathPacketLoss(ArrayList<String> path){
-//        createFullMeshTopo();
-        if (path == null || path.size() <= 1){
-            return null;
-        }
-        Double pathPacketUnLoss = 1.0;
-        for (int i=0;i<path.size();i++){
-            Integer srcNodeIdx = this.nodeIndexMap.get(path.get(i));
-            if (i+1<path.size()){
-                Integer desNodeIdx = this.nodeIndexMap.get(path.get(i+1));
-                if (srcNodeIdx != null && desNodeIdx != null){
-                    QosBO qosBO = this.topoArr[srcNodeIdx][desNodeIdx];
-                    if (qosBO != null){
-                        BigDecimal db1 = new BigDecimal(1);
-                        BigDecimal unLoss = db1.subtract(new BigDecimal(qosBO.getPacket_loss()));
-                        BigDecimal db2 = new BigDecimal(pathPacketUnLoss.toString());
-                        pathPacketUnLoss = db2.multiply(unLoss).doubleValue();
-                    }
-                }
-            }
-        }
-        BigDecimal db3 = new BigDecimal(1);
-        return db3.subtract(new BigDecimal(pathPacketUnLoss.toString())).toString();
-    }
-
-    /**
-     * 7.计算一条路径抖动
-     * @param path
-     * @return
-     */
-    public String getPathJitter(ArrayList<String> path){
-//        createFullMeshTopo();
-        if (path == null || path.size() <= 1){
-            return null;
-        }
-        //TODO
-        return null;
     }
 
     /**
@@ -179,7 +106,7 @@ public class PathCalculateController {
         List<LinkAndQosBO> finishFilterLinkList = new ArrayList<>();
         //不符合qos要求的链路集合：将来用于筛选所有备选虚拟专线集合
         Set<String> unOkLinkSet = new HashSet<>();
-
+        //TODO 这里应该根据链路名称去map中找到节点对应索引，从topoArr中读取qos
         if (this.linkAndQosBOList != null) {
             System.out.println("筛选之前的链路数量：" + this.linkAndQosBOList.size());
             for (LinkAndQosBO linkAndQosBO : this.linkAndQosBOList) {
@@ -264,6 +191,89 @@ public class PathCalculateController {
         }
         return allPath;
     }
+
+    /**
+     * 7.计算一条路径rtt
+     * @param path
+     * @return
+     */
+    public String getPathRtt(ArrayList<String> path){
+//        createFullMeshTopo();
+        //遍历传进来的路径每一条链路，nodeIndexMap中找到对应索引，再从topoArr中拿到qos
+        if (path == null || path.size() <= 1){
+            return null;
+        }
+        Double pathRtt = 0.0;
+        for (int i=0;i<path.size();i++){
+            Integer srcNodeIdx = this.nodeIndexMap.get(path.get(i));
+            if (i+1<path.size()){
+                Integer desNodeIdx = this.nodeIndexMap.get(path.get(i+1));
+                if (srcNodeIdx != null && desNodeIdx != null){
+                    QosBO qosBO = this.topoArr[srcNodeIdx][desNodeIdx];
+                    if (qosBO != null){
+                        pathRtt = pathRtt +Double.parseDouble(qosBO.getRtt_avg());
+                    }
+                }
+            }
+        }
+        return pathRtt.toString();
+    }
+
+    /**
+     * 7.计算一条路径丢包率
+     * @param path
+     * @return
+     */
+    public String getPathPacketLoss(ArrayList<String> path){
+//        createFullMeshTopo();
+        if (path == null || path.size() <= 1){
+            return null;
+        }
+        Double pathPacketUnLoss = 1.0;
+        for (int i=0;i<path.size();i++){
+            Integer srcNodeIdx = this.nodeIndexMap.get(path.get(i));
+            if (i+1<path.size()){
+                Integer desNodeIdx = this.nodeIndexMap.get(path.get(i+1));
+                if (srcNodeIdx != null && desNodeIdx != null){
+                    QosBO qosBO = this.topoArr[srcNodeIdx][desNodeIdx];
+                    if (qosBO != null){
+                        BigDecimal db1 = new BigDecimal(1);
+                        BigDecimal unLoss = db1.subtract(new BigDecimal(qosBO.getPacket_loss()));
+                        BigDecimal db2 = new BigDecimal(pathPacketUnLoss.toString());
+                        pathPacketUnLoss = db2.multiply(unLoss).doubleValue();
+                    }
+                }
+            }
+        }
+        BigDecimal db3 = new BigDecimal(1);
+        return db3.subtract(new BigDecimal(pathPacketUnLoss.toString())).toString();
+    }
+
+    /**
+     * 7.计算一条路径抖动
+     * @param path
+     * @return
+     */
+    public String getPathJitter(ArrayList<String> path){
+//        createFullMeshTopo();
+        if (path == null || path.size() <= 1){
+            return null;
+        }
+        //TODO
+        return null;
+    }
+
+    /**
+     * 根据链路筛选后的路径集合：计算每一条路径的qos
+     * @param allPath 拿到的是经过链路筛选后的路径集合
+     * @return
+     */
+    public LinkedList<Pair<ArrayList<String>,QosBO>> finishFilterByLinkAndWithQoS(LinkedList<Pair<ArrayList<String>,QosBO>> allPath){
+        //TODO
+        return null;
+    }
+
+
 
     /**
      * 8.根据需求qos筛选虚拟专线集合---最终结果
