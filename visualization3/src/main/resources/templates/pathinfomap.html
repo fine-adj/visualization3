@@ -14,10 +14,15 @@
         <span>源节点:</span>
         <select class="form-control" name="sex">
             <option></option>
+            <option>阿里云</option>
+            <option>******</option>
+        </select>
+        &nbsp;&nbsp;
+        <select class="form-control" name="sex">
+            <option></option>
             <option>北京</option>
             <option>******</option>
         </select>
-        &nbsp;
         <span>目的节点:</span>
         <select class="form-control" name="sex">
             <option></option>
@@ -32,6 +37,9 @@
         <input type="text" class="form-control setmargin" name="kiindex1">
         &nbsp;
         <span>时延:</span>
+        <input type="text" class="form-control setmargin" name="kiindex1">
+
+        <span>时间:</span>
         <input type="text" class="form-control setmargin" name="kiindex1">
     </div>
 </div>
@@ -81,7 +89,8 @@
                     formatter: '{b}'
                 }
             },
-            data: [{
+            data: [
+                {
                     name: "新疆",
                     value: [87.36, 43.45, 100]
                 },
@@ -89,14 +98,6 @@
                     name: "北京",
                     value: [116.24, 39.55, 100]
                 },
-                // {
-                //     name: "武汉",
-                //     value: [114.31, 30.52,100]
-                // },
-                // {
-                //     name: "长沙",
-                //     value: [113.0823, 28.2568,100]
-                // },
                 {
                     name: "成都",
                     value: [103.9526, 30.7617,100]
@@ -129,15 +130,6 @@
                     [87.36, 43.45],
                 ]
             },
-            //---------------------------------长沙-武汉
-            // {
-            //     fromName: 1,
-            //     toName: 1,
-            //     coords: [
-            //         [113.0823, 28.2568],
-            //         [114.31, 30.52]
-            //     ]
-            // },
             //----------------------------------北京-成都
             {
                 fromName: 1,

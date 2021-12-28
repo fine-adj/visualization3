@@ -92,8 +92,8 @@ public class DataDetailController {
         } catch (IOException ie) {
             ie.printStackTrace();
         }
-        lists.add(nodeAlias);
-        lists.add(nodeIp);
+        lists.add(nodeAlias);//名称
+        lists.add(nodeIp); //IP
         return lists;
     }
 
@@ -329,9 +329,11 @@ public class DataDetailController {
         return result;
     }
     /**
-     * @return 传进来一个时间戳，即按照该时间戳的当天日期，创造出144个规范的时间片序列返回
+     * 传进来一个时间戳，即按照该时间戳的当天日期，创造出144个规范的时间片序列返回
+     * @param time 格式："2021-12-08 00:00:00"
+     * @return
+     * @throws ParseException
      */
-
     public String[] createTheDayStandardTimestampList(String time) throws ParseException {
         //传进来一个时间戳先转换成日期
 //        String time = transferStampToTime(timestamp);

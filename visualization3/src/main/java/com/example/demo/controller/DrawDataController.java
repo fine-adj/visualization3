@@ -1,119 +1,170 @@
 package com.example.demo.controller;
 
-import com.example.demo.bo.*;
-import com.example.demo.config.RedisConfg;
-import com.example.demo.utils.RedisSaveUtil;
+import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-import redis.clients.jedis.Jedis;
+import net.sf.json.JSONObject;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.text.ParseException;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
 
+/**
+ * 虚拟专线：负责处理前端直接用的数据，与前端交互
+ */
 @RestController
 @Slf4j
 public class DrawDataController {
 
     @Autowired
-    private RedisSaveUtil redisSaveUtil;
-
-    @Autowired
-    private RedisConfg redisConfg;
-
-    @Autowired
     private DataDetailController dataDetailController;
 
-    @GetMapping("/readOne")
-    public List<Object> OneLinkOneDayData(@RequestParam("srcName") String srcName,@RequestParam("desName") String desName,
-                                    @RequestParam("time") String time){
-        //前端输入源节点，目的节点，日期。然后从redis中查
-        String linkKey = srcName + "-" + desName;
-        List<Object> list = redisSaveUtil.getList(linkKey,0);
+    private ArrayList<String> selectPosFailIpList = new ArrayList<>();
 
-        return list;
+    /**
+     * http访问远程服务器查询一个ip的经纬度
+     *
+     * @param ip
+     * @return
+     */
+    @Deprecated
+    public String selectCityPosInfo(String ip) {
+        String urlParam = "http://192.168.0.248:8000/club203/ipipnet/" + ip;
+        HttpURLConnection con = null;
+        BufferedReader buffer = null;
+        StringBuffer resultBuffer = null;
+        try {
+            URL url = new URL(urlParam);
+            con = (HttpURLConnection) url.openConnection();
+            con.setConnectTimeout(5000);
+            con.setReadTimeout(5000);
+            con.setRequestMethod("GET");
+            //设置请求需要返回的数据类型和字符集类型
+            con.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
+            //允许写出
+            con.setDoOutput(true);
+            //允许读入
+            con.setDoInput(true);
+            //不使用缓存
+            con.setUseCaches(false);
+            //得到响应码
+            int responseCode = con.getResponseCode();
+
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                //得到响应流
+                InputStream inputStream = con.getInputStream();
+                //将响应流转换成字符串
+                resultBuffer = new StringBuffer();
+                String line;
+                buffer = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
+                while ((line = buffer.readLine()) != null) {
+                    resultBuffer.append(line);
+                    return resultBuffer.toString();
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            log.warn("^^^^^^^^^^^^^^^^^");
+        }
+        return "";
     }
 
     /**
-     * 处理每个时间片上，所有链路的qos指标数据。从Redis中读,
-     * 构造好当天的时间片列表
-     * @param timePic 传入一个时间片
+     * 查询所有IP的经纬度
+     * [ 117.78.40.125,  139.9.4.193,  119.3.66.99, google.com, cloud.google.com, amazon.com, aws.amazon.com, azure.microsoft.com, qq.com, taobao.com, baidu.com, weixin.qq.com, douyin.com, toutiao.com, kuaishou.com, www.pinduoduo.com, www.12306.cn, pvp.qq.com, pay.weixin.qq.com, alipay.com, www.online.paymaxuae.com, pay.google.com, worldpay.com, 172.105.42.99]
+     * @return
      */
-
-    public List<LinkAndQosBO> detailOneTimePicData(String timePic){
-        //一个OneTimePicBO对象包含所有链路的qos数据
-        OneTimePicBO oneTimePicBO = new OneTimePicBO();
-        List<LinkAndQosBO> linkAndQosBOList = new ArrayList<>();
-        //从redis中指定数据库（0号库）中读取所有key就是所有链路
-        Jedis jedisBean = redisConfg.getJedisBean();
-        jedisBean.select(RedisDBNumAndDataDateMapping.NUM_0_20211203); //选择0号数据库
-        Set<String> keys = jedisBean.keys("*");
-        System.out.println("--------keys:"+keys.size());
-        //for循环,每读一条链路就存入
-        if (keys != null){
-            for(String link : keys){
-                List<OneLinkMoreDayBO> oneLinkMoreDayBOList = redisSaveUtil.getList(link,RedisDBNumAndDataDateMapping.NUM_0_20211203);
-                if (oneLinkMoreDayBOList != null){
-                    //找到匹配的时间片
-                    List<TimestampBO> timestampBOList = oneLinkMoreDayBOList.get(0).getLinkBOList().get(0).getTimestampBOList();
-                    if (timestampBOList != null){
-                        QosBO qosBO = null;
-                        for (TimestampBO timestampBO : timestampBOList){
-                            if (timePic.equals(timestampBO.getTimestamp())){
-                                //拿到当前时间片对应的qosBO
-                                qosBO = timestampBO.getQosBO();
-                                //找到一个匹配的时间片后，后面的时间片不再操作
-                                break;
-                            }
-                        }
-                        //linkAndQosBO存，一个时间片的，一条链路和一个qos对象
-                        LinkAndQosBO linkAndQosBO = new LinkAndQosBO();
-                        linkAndQosBO.setQosBO(qosBO);
-                        linkAndQosBO.setLink(link);
-                        //linkAndQosBOList存，一个时间片的，所有链路及其对应的qosBO
-                        linkAndQosBOList.add(linkAndQosBO);
-                    }else {
-                        log.warn("timestampBOList is null!");
-                    }
-
+    @Deprecated
+    public HashMap<String, String> getInfo() {
+        ArrayList<ArrayList<String>> linkSet = dataDetailController.createLinkSet("src/main/resources/node.txt");
+        HashMap<String, String> ipPosMap = new HashMap<>();
+        if (linkSet != null) {
+            ArrayList<String> ipList = linkSet.get(1);
+            System.out.println("总ip数量：" + ipList.size());
+            for (String ip : ipList) {
+                String s = selectCityPosInfo(ip);
+                if (s != null && !("".equals(s))) {
+                    JSONObject jsonObject = JSONObject.fromObject(s);
+                    Object latitude = jsonObject.get("latitude"); //纬度
+                    Object longitude = jsonObject.get("longitude"); //经度
+                    Object cityName = jsonObject.get("city_name"); //城市名称
+                    ipPosMap.put(ip, latitude + "-" + longitude+"-"+cityName);
+                } else {
+                    this.selectPosFailIpList.add(ip);
                 }
             }
-//            oneTimePicBO.setLinkAndQosBOList(linkAndQosBOList);
-        }else {
-            log.warn("从Redis中查到的所有key-链路集合为空！");
         }
-        return linkAndQosBOList;
+        System.out.println("已查经纬度ip数量：" + ipPosMap.size());
+        System.out.println(this.selectPosFailIpList);
+        return ipPosMap;
     }
-    @RequestMapping("/detail-onetime-pic-data")
-    public String saveOneTimePicData(){
-        try{
 
-            //获得一个时间片集合
-            String[] timePicArr = dataDetailController.createTheDayStandardTimestampList("2021-12-03 11:11:11");
-            if (timePicArr != null){
-                for (int i=0;i<timePicArr.length;i++){
-//                    List<OneTimePicBO> oneTimePicBOList = new ArrayList<>();
-                    List<LinkAndQosBO> linkAndQosBOList = detailOneTimePicData(timePicArr[i]);
-//                    oneTimePicBOList.add(oneTimePicBO);
-                    redisSaveUtil.setList(timePicArr[i],linkAndQosBOList,RedisDBNumAndDataDateMapping.NUM_7_20211203);
-                    log.info("success to saveOneTimePicData");
-                }
+    @Deprecated
+    @RequestMapping("/ttt")
+    public String wrirteToAvl() {
+        PrintWriter fw;
+        HashMap<String, String> info = getInfo();
+        System.out.println("info:"+info);
+        String fileFullPath = "src/main/resources/ippos.txt";
+        try {
+            fw = new PrintWriter(fileFullPath);
+            @SuppressWarnings("unused")
+            BufferedWriter bw = new BufferedWriter(fw);
+            log.info("开始向" + fileFullPath + "文件写入清单数据！");
+            for (Map.Entry<String, String> entry : info.entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue();
+                fw.write(key + ":" + value);
+                fw.write("\n");
+                fw.flush();
+                fw.close();
             }
-        }catch (ParseException e){
-            e.printStackTrace();
+            log.info("写入完成！");
+        } catch (Exception e) {
+            log.error("写入文件时报错！", e);
         }
-
         return "success";
     }
 
-    @RequestMapping("test888")
-    public List<Object> saveOneTimePicDat2(){
-        List<Object> list = redisSaveUtil.getList("1638537000-1638537600", RedisDBNumAndDataDateMapping.NUM_7_20211203);
-        System.out.println(list.size());
-        return list;
-
+    /**
+     * 根据节点别名查询节点经纬度
+     * @param nodeName 输入节点别名，比如："HuaWei_Shanghai2_3"
+     * @return 返回值格式：{"key":"HuaWei_Shanghai2_3","value":"121.48941-31.40527"}
+     */
+    public Pair<String,String> getCityPosMap(@RequestParam("nodeName") String nodeName){
+        String filePath = "src/main/resources/citypos.txt";
+        HashMap<String,String> cityPosMap = new HashMap<>();
+        Pair<String,String> pair = null;
+        try {
+            File file = new File(filePath);
+            InputStreamReader reader = new InputStreamReader(new FileInputStream(file));
+            BufferedReader bufferedReader = new BufferedReader(reader);
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                String city = StringUtils.substringBefore(line,"=");
+                String pos = StringUtils.substringAfter(line,"=");
+                cityPosMap.put(city,pos);
+            }
+            for (Map.Entry<String,String> map : cityPosMap.entrySet()){
+                String pattern = ".*"+map.getKey()+".*";
+                boolean isMatch = Pattern.matches(pattern, nodeName);
+                if (isMatch){
+                    pair = new Pair<>(nodeName,map.getValue());
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return pair;
     }
 
 }
